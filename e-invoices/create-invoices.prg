@@ -2,9 +2,9 @@
 ///
 /// <summary>
 /// Intro sample for the e-invoice framework: builds XRechnung/ZUGFeRD
-/// invoices from Northwind demo data via EinvFactory():createInvoice(),
-/// using the setXXX() builder style (see create-invoices.README.md for
-/// details).
+/// invoices from Northwind demo data under .\data\ via
+/// EinvFactory():createInvoice(), using the setXXX() builder style (see
+/// readme.md in this directory for details).
 /// </summary>
 ///
 /// <copyright>
@@ -14,7 +14,7 @@
 //////////////////////////////////////////////////////////////////////
 
 #include "common.ch"
-#include "..\einvoice-codes.ch"
+#include ".assets\e-invoice-factory\einvoice-codes.ch"
 
 /// <summary>
 /// Northwind-data is FOXCDX only

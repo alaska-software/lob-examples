@@ -3,9 +3,10 @@
 /// <summary>
 /// Intro sample for the e-invoice framework
 /// (`alaska-software.e-invoice-factory.dll`): turns one Northwind
-/// (extended) order invoice - plain DBF rows under
-/// `e-invoice\examples\data\` - into XRechnung and ZUGFeRD XML. The
-/// point of the sample is `EinvFactory():createInvoice()` (see
+/// (extended) order invoice - plain DBF rows under `.\data\` - into
+/// XRechnung and ZUGFeRD XML, building every model object as a plain
+/// `DataObject` instead of via setXXX() builder calls. The point of
+/// the sample is `EinvFactory():createInvoice()` (see
 /// `CreateEInvoice()`): given only the seller's and the buyer's
 /// address, it alone decides the tax scenario - domestic, intra-EU or
 /// export - and the three demo invoices below exercise exactly those
@@ -33,7 +34,7 @@
 ///   INV-2024-00005  SUNN4, Wroclaw, Poland   -> IntraEuEinvoice, VAT-exempt (K)
 ///   INV-2024-00002  ORCH4, Austin, USA       -> ExportEinvoice, VAT-exempt (G)
 ///
-/// Usage: create-invoices.exe [cDataPath] [cOutDir]
+/// Usage: create-invoices-dto.exe [cDataPath] [cOutDir]
 /// </remarks>
 ///
 /// <copyright>
@@ -43,7 +44,7 @@
 //////////////////////////////////////////////////////////////////////
 
 #include "common.ch"
-#include "..\einvoice-codes.ch"
+#include ".assets\e-invoice-factory\einvoice-codes.ch"
 
 /// <summary>
 /// Same DBE/RDD setup as the other Northwind-data use cases - see 

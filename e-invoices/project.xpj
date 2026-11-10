@@ -1,6 +1,6 @@
 [PROJECT]
     TARGET_DIR = .\run
-    Version = 3.0
+    Version = 2.0
     Project.xpj
     AUX.FILE = readme.md
     AUX.FILE = e-invoice-factory-usage-guide.md
@@ -21,7 +21,7 @@
     TARGET_DIR           = .\
     INTERMEDIATE_DEBUG   = .debug
     INTERMEDIATE_RELEASE = .release
-    DEPENDS_ON           = ..\alaska-software.e-invoice-factory.dll
+    DEPENDS_ON           = $(ASSETS_PATH)\e-invoice-factory
     // $START-AUTODEPEND
     create-invoices-dto.obj
     // $STOP-AUTODEPEND
@@ -40,7 +40,7 @@
     TARGET_DIR           = .\
     INTERMEDIATE_DEBUG   = .debug
     INTERMEDIATE_RELEASE = .release
-    DEPENDS_ON           = ..\alaska-software.e-invoice-factory.dll
+    DEPENDS_ON           = $(ASSETS_PATH)\e-invoice-factory
     // $START-AUTODEPEND
     create-invoices.obj
     // $STOP-AUTODEPEND

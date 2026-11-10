@@ -80,16 +80,17 @@ scenario; everything else is ordinary invoice content. `EinvoiceParty`/`Einvoice
 `EinvoiceLineItem`/`EinvoicePaymentMeans`/`EinvoicePaymentTerms`/`EinvoiceAllowanceCharge`
 all follow the same pattern: construct with `():new()`, then chain `setXXX()` calls — every
 setter returns `self`. Amounts/quantities/rates accept a plain `Numeric` or `Character`
-(`"19.99"`, `"19,99"`) and are converted to an exact `EinvoiceDecimal` internally; see
-`einvoice-decimal.prg` if you need to compute with one directly (e.g. to read
-`oInvoice:toModel():Totals:GrandTotal` back out).
+(`"19.99"`, `"19,99"`) and are converted to an exact `EinvoiceDecimal` internally; see the
+`EinvoiceDecimal` class remarks in the reference documentation if you need to compute with
+one directly (e.g. to read `oInvoice:toModel():Totals:GrandTotal` back out).
 
-### 1.3 The worked, data-driven example: `examples/create-invoices.prg`
+### 1.3 The worked, data-driven example: `create-invoices.prg`
 
 For a complete, real example that reads actual data (Northwind demo order/customer/line-item
-DBF tables) and produces both XRechnung and ZUGFeRD files for three different tax scenarios
-in one run, read `examples/create-invoices.prg` (and its own `examples/readme.md`). It is
-deliberately structured as the shape to copy into your own integration:
+DBF tables under `.\data\`) and produces both XRechnung and ZUGFeRD files for three different
+tax scenarios in one run, read `create-invoices.prg` (and its own `readme.md`, both in the
+[`e-invoices`](https://github.com/alaska-software/lob-examples/tree/main/e-invoices) sample
+repository). It is deliberately structured as the shape to copy into your own integration:
 
 - `CreateEInvoice( oSeller, cInvoiceId, cDataPath )` — the one function with a single
   concern: read one order from your tables, build the buyer `EinvoiceParty`/
@@ -102,9 +103,9 @@ deliberately structured as the shape to copy into your own integration:
   `BEGIN SEQUENCE/RECOVER`, since both raise once a validation error remains.
 
 Three demo invoices exercise the three automatic scenarios end to end (domestic 19% VAT,
-intra-EU VAT-exempt, export VAT-exempt) — see the table in `examples/readme.md` for exactly
-which Northwind invoice id maps to which scenario, and run it (`create-invoices.exe`) to see
-real XRechnung/ZUGFeRD output on disk.
+intra-EU VAT-exempt, export VAT-exempt) — see the table in `readme.md` for exactly which
+Northwind invoice id maps to which scenario, and run it (`create-invoices.exe`) to see real
+XRechnung/ZUGFeRD output on disk.
 
 ### 1.4 When you already know the scenario, or it doesn't fit the automatic three
 
@@ -150,8 +151,8 @@ oSeller:ElectronicAddress := "invoicing@northwind-inc.example"
 LOCAL oInvoice := EinvFactory():createInvoice( oSeller, oBuyer, "INV-2026-0001", Date() )
 ```
 
-`examples/create-invoices-dto.prg` is the exact DTO equivalent of `examples/create-invoices.prg`
-from §1.3 — same data, same three tax scenarios, same XRechnung/ZUGFeRD output — with every
+`create-invoices-dto.prg` is the exact DTO equivalent of `create-invoices.prg` from §1.3 —
+same data, same three tax scenarios, same XRechnung/ZUGFeRD output — with every
 `EinvoiceParty`/`EinvoiceAddress`/`EinvoiceLineItem`/`EinvoicePaymentMeans`/
 `EinvoicePaymentTerms` built as a `DataObject` instead. Open the two files side by side to see
 both styles for the same invoice; pick whichever fits how your own data already arrives (a
