@@ -26,10 +26,24 @@ cd lob-examples/e-invoices
 
 **1. Install the asset and build**
 
+**1.1 V3 only**
+
 ```bat
 xppam PROJECT -install
 pbuild project.xpj
 ```
+
+**1.2 V2 only**
+
+- load project into Xbase++ Workbench
+- Open Asset Manager on each target, add/update the e-Incoice asset
+- Build project
+
+```bat
+xppam PROJECT -install
+pbuild project.xpj
+```
+
 
 **2. Run an example**
 
@@ -53,7 +67,7 @@ Both write their `.xrechnung.xml`/`.zugferd.xml` output next to the executable.
   walks through creating an invoice, building the model either as objects or as DTOs, and
   validating a document loaded from disk.
 - The full method-by-method reference for the asset is in the "eInvoice" group of the
-  Xbase++ reference documentation: https://doc.alaska-software.net/v2/content/grp_lob
+  Xbase++ reference documentation: https://doc.alaska-software.com/v2/content/grp_toc_l2_xrechnung.cxp
 
 ## Copyright
 
