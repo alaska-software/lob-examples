@@ -5,12 +5,13 @@ Xbase++ Professional Edition ships with an **e-invoice-factory** asset
 **XRechnung 3.0** or **ZUGFeRD 2.x / Factur-X** - from/to an in-memory invoice model, with
 no PDF, no DBF tables and no network calls involved.
 
-This repository is a small, runnable, self-contained pair of examples that show the asset in
-use: both turn the same Northwind (extended) order data into XRechnung and ZUGFeRD XML for a
-domestic, an intra-EU and an export invoice, `EinvFactory():createInvoice()` picking the right
-tax scenario from the seller's and the buyer's country alone - one example builds the invoice
-model with `setXXX()` builder calls, the other builds the very same model as plain
-`DataObject` DTOs, so the two files can be read side by side to compare both styles.
+This repository is a small, runnable, self-contained pair of examples that show the asset 
+in use: both turn the same Northwind (extended) order data into XRechnung and ZUGFeRD XML 
+for a domestic, an intra-EU and an export invoice. The right tax scenario is deducted 
+automatically from the seller's and the buyer's country when creating the invoice via 
+`EinvFactory():createInvoice()`. One example builds the invoice model with `:setXXX()` 
+builder calls, the other builds the very same model as plain `DataObject` DTOs, so the 
+two files can be read side by side to compare both styles.
 
 > **Prerequisite:** these examples need **Xbase++ Professional Edition V2.2920 or higher**
 > (the version the `e-invoice-factory` asset ships with).
@@ -35,14 +36,9 @@ pbuild project.xpj
 
 **1.2 V2 only**
 
-- load project into Xbase++ Workbench
-- Open Asset Manager on each target, add/update the e-Incoice asset
+- Load project into Xbase++ Workbench
+- Open Asset Manager on each target, add the E-Invoice Factory asset
 - Build project
-
-```bat
-xppam PROJECT -install
-pbuild project.xpj
-```
 
 
 **2. Run an example**
@@ -58,8 +54,8 @@ Both write their `.xrechnung.xml`/`.zugferd.xml` output next to the executable.
 
 | Target | What it does | How it does it |
 |---|---|---|
-| `create-invoices.exe` | Reads one Northwind order per demo invoice and writes a domestic, an intra-EU and an export XRechnung/ZUGFeRD file. | Builds every `EinvoiceAddress`/`EinvoiceParty`/`EinvoiceLineItem`/`EinvoicePaymentMeans`/`EinvoicePaymentTerms` through its own `setXXX()` methods, then calls `EinvFactory():createInvoice()`. |
-| `create-invoices-dto.exe` | The same three demo invoices, the same XRechnung/ZUGFeRD output. | Builds every one of those same objects as a plain `DataObject` instead of calling `setXXX()`. |
+| `create-invoices.exe` | Reads one Northwind order per demo invoice and writes a domestic, an intra-EU and an export XRechnung/ZUGFeRD file. | Builds every `EinvoiceAddress`/`EinvoiceParty`/`EinvoiceLineItem`/`EinvoicePaymentMeans`/`EinvoicePaymentTerms` through its own `:setXXX()` methods, then calls `EinvFactory():createInvoice()`. |
+| `create-invoices-dto.exe` | The same three demo invoices, the same XRechnung/ZUGFeRD output. | Builds every one of those same objects as a plain `DataObject` instead of calling `:setXXX()`. |
 
 ## Documentation
 
