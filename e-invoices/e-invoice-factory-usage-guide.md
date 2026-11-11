@@ -1,19 +1,19 @@
-# E-Invoice Factory for Xbase++ — Usage Guide
+# E-Invoice Factory for Xbase++ - Usage Guide
 <small>Rev. 1.1 Nov.2026</small>
 
-`alaska-software.e-invoice-factory.dll` builds and reads **EN 16931** e-invoices —
-**XRechnung 3.0** or **ZUGFeRD 2.x / Factur-X** (CII syntax) — from/to an in-memory invoice
-model. No PDF, no DBF tables, no network calls: you build the model from whatever data you
-already have (plain `DataObject`s, DBF rows, anything), the DLL calculates the tax breakdown
-and totals, checks the result against the EN 16931/XRechnung rule catalogue, and serializes
+The E-Invoice Factory asset builds and reads **EN 16931** e-invoices -
+**XRechnung 3.0** or **ZUGFeRD 2.x / Factur-X** (CII syntax) - from/to an in-memory invoice
+model. No PDF, no DBF tables, no network calls. You build the model from whatever data you
+already have (plain `DataObject`s, DBF rows, anything), the asset calculates the tax breakdown
+and totals, checks the result against the EN 16931/XRechnung rule catalog, and serializes
 it. It is validated against the official CII D16B XSD, the CEN EN 16931 Schematron and the
-KoSIT XRechnung Schematron — see the **Appendix** at the end of this guide for the 
+KoSIT XRechnung Schematron. See the **Appendix** at the end of this guide for the 
 authoritative legal/standards sources behind every rule this module enforces.
 
 This guide covers the three things a Line-of-Business developer actually does with the
 module: **create** an XRechnung, build the model **either as objects or as plain DTOs**, and
 **validate a document loaded from disk**. For the full method-by-method reference (every
-`setXXX()`/`getXXX()`, its BT/BG number, what it defaults to, what rule checks it), read the
+`:setXXX()`/`:getXXX()`, its BT/BG number, what it defaults to, what rule checks it), read the
 reference at https://doc.alaska-software.com group "eInvoice".
 
 ---
@@ -22,23 +22,24 @@ reference at https://doc.alaska-software.com group "eInvoice".
 
 ### 1.1 The five steps
 
-1. Build the **seller** and **buyer** (`EinvoiceParty` — name, VAT ID, address, ...).
-2. Hand both to **`EinvFactory():createInvoice()`** — it looks at the seller's and buyer's
+1. Build the **seller** and **buyer** (`EinvoiceParty` - name, VAT ID, address, ...).
+2. Hand both to **`EinvFactory():createInvoice()`**. It looks at the seller's and buyer's
    country alone and returns the right `AbstractEinvoice` subclass already populated with
    both parties: `DomesticEinvoice` (same country), `IntraEuEinvoice` (another EU member
    state) or `ExportEinvoice` (outside the EU). A non-EU seller gets a `ManualEinvoice`
-   instead — see §1.4.
+   instead, see §1.4.
 3. Add **line items** (`:addLineItem()`), and anything else the invoice needs: payment means
    (`:setPaymentMeans()`), payment terms (`:setPaymentTerms()`), delivery date
    (`:setDeliveryDate()`), allowances/charges, notes, ...
-4. Call **`:validate()`**. It never raises — it returns a `DataObject{Valid, Errors,
-   Warnings, Model}`, each error/warning carrying its own EN 16931/XRechnung rule id, so you
-   can print or log every problem at once instead of stopping at the first.
-5. Once `:Valid`, call **`:toXRechnung()`** (or `:toZugferd( "EN16931" )` for the hybrid
+4. Call **`:validate()`**. It never raises an error. It returns a `DataObject` with members 
+   `:Valid`, `:Errors`, `:Warnings`, `:Model`, each error/warning carrying its own EN 
+   16931/XRechnung rule id, so you can print or log every problem at once instead of stopping
+   at the first.
+5. Once valid, call **`:toXRechnung()`** (or `:toZugferd( "EN16931" )` for the hybrid
    format) to get the XML string. Both run `:validate()` again internally plus their own
    extra, format-specific checks (XRechnung's German CIUS rules `BR-DE-*`, the PEPPOL rules
-   it adopted) and **raise** via `Exception():raisePlainText()` if any error remains — call
-   `:validate()` yourself first (step 4) to decide whether it is even worth attempting.
+   it adopted) and raise a runtime error if any error remains. Call `:validate()` yourself 
+   first (step 4) to decide whether it is even worth attempting.
 
 ### 1.2 Minimal example
 
@@ -75,11 +76,11 @@ ELSE
 ENDIF
 ```
 
-Only the seller's and buyer's `CountryCode` are required for `EinvFactory()` to pick the
+Only the seller's and buyer's country code are required for `EinvFactory()` to pick the
 scenario; everything else is ordinary invoice content. `EinvoiceParty`/`EinvoiceAddress`/
 `EinvoiceLineItem`/`EinvoicePaymentMeans`/`EinvoicePaymentTerms`/`EinvoiceAllowanceCharge`
-all follow the same pattern: construct with `():new()`, then chain `setXXX()` calls — every
-setter returns `self`. Amounts/quantities/rates accept a plain `Numeric` or `Character`
+all follow the same pattern: construct with `:new()`, then chain `:setXXX()` calls (every
+setter returns `self`). Amounts/quantities/rates accept a plain `Numeric` or `Character`
 (`"19.99"`, `"19,99"`) and are converted to an exact `EinvoiceDecimal` internally; see the
 `EinvoiceDecimal` class remarks in the reference documentation if you need to compute with
 one directly (e.g. to read `oInvoice:toModel():Totals:GrandTotal` back out).
@@ -92,18 +93,18 @@ tax scenarios in one run, read `create-invoices.prg` (and its own `readme.md`, b
 [`e-invoices`](https://github.com/alaska-software/lob-examples/tree/main/e-invoices) sample
 repository). It is deliberately structured as the shape to copy into your own integration:
 
-- `CreateEInvoice( oSeller, cInvoiceId, cDataPath )` — the one function with a single
+- `CreateEInvoice( oSeller, cInvoiceId, cDataPath )` - the one function with a single
   concern: read one order from your tables, build the buyer `EinvoiceParty`/
   `EinvoiceAddress`/line items with `setXXX()`, call `EinvFactory():createInvoice()`, and
-  return the `AbstractEinvoice`. No validation, no XML, no file I/O — this is the part you
+  return the `AbstractEinvoice`. No validation, no XML, no file I/O - this is the part you
   adapt, swapping the DBF-specific lines for your own tables.
-- `Main()` — calls `:validate()` directly, prints every error/warning with its rule id, and
-  only calls `SaveEInvoice()` once `:Valid`.
-- `SaveEInvoice()` — calls `:toXRechnung()`/`:toZugferd()`, each guarded in its own
-  `BEGIN SEQUENCE/RECOVER`, since both raise once a validation error remains.
+- `Main()` - calls `:validate()` directly, prints every error/warning with its rule id, and
+  only calls `SaveEInvoice()` once valid.
+- `SaveEInvoice()` - calls `:toXRechnung()`/`:toZugferd()`, each guarded in its own
+  `BEGIN SEQUENCE/RECOVER`, since both raise an error once a validation error remains.
 
 Three demo invoices exercise the three automatic scenarios end to end (domestic 19% VAT,
-intra-EU VAT-exempt, export VAT-exempt) — see the table in `readme.md` for exactly which
+intra-EU VAT-exempt, export VAT-exempt). See the table in `readme.md` for exactly which
 Northwind invoice id maps to which scenario, and run it (`create-invoices.exe`) to see real
 XRechnung/ZUGFeRD output on disk.
 
@@ -113,10 +114,10 @@ XRechnung/ZUGFeRD output on disk.
 `DomesticEinvoice():new(...)` / `IntraEuEinvoice():new(...)` / `ExportEinvoice():new(...)`
 directly when the scenario is already known for certain (skipping the country-based
 decision), and **`ManualEinvoice`** is the one scenario that applies no automatic VAT logic
-at all — every line states its own `vatCategory` (and `vatRate` for `"S"`) via
+at all. Every line states its own `vatCategory` (and `vatRate` for `"S"`) via
 `EinvoiceLineItem:setVatCategory()`/`:setVatRate()`. Use it for a non-EU seller (automatic
 fallback of `EinvFactory():createInvoice()`), a special VAT scheme, or whenever the three
-automatic scenarios do not apply — `EinvFactory():createManualInvoice()` is the explicit way
+automatic scenarios do not apply. `EinvFactory():createManualInvoice()` is the explicit way
 to ask for it directly. See §1 of the Appendix below for the full scenario-to-VAT-category
 decision table.
 
@@ -125,15 +126,11 @@ decision table.
 ## 2. Building the model as DTOs instead of `setXXX()`
 
 Every model class accepts a **plain `DataObject`** with the same member names as an
-alternative to the `setXXX()` builder chain — `EinvoiceParty():new( oDataObject )` instead of
+alternative to the `:setXXX()` builder chain - `EinvoiceParty():new( oDataObject )` instead of
 `EinvoiceParty():new():setName(...):setAddress(...)`. Both paths normalize identically (VAT
 ID cleaned up and upper-cased, country code upper-cased, text converted to UTF-8, ...),
 because the DTO constructor itself just unpacks the `DataObject` and calls the matching
-`setXXX()` for each member — nothing is skipped or treated differently. `EinvFactory()` and
-every `:addRecipient()`/`:addLineItem()`/`:setPaymentMeans()`/etc. normalize their argument
-through `EinvoiceXxx:from()`, so a plain `DataObject` works everywhere an `EinvoiceXxx`
-object is expected — you never have to construct the class yourself if you would rather just
-fill in a `DataObject`:
+`:setXXX()` for each member - nothing is skipped or treated differently. 
 
 ```xbase
 LOCAL oSellerAddr := DataObject():new()
@@ -151,12 +148,12 @@ oSeller:ElectronicAddress := "invoicing@northwind-inc.example"
 LOCAL oInvoice := EinvFactory():createInvoice( oSeller, oBuyer, "INV-2026-0001", Date() )
 ```
 
-`create-invoices-dto.prg` is the exact DTO equivalent of `create-invoices.prg` from §1.3 —
-same data, same three tax scenarios, same XRechnung/ZUGFeRD output — with every
+`create-invoices-dto.prg` is the exact DTO equivalent of `create-invoices.prg` from §1.3 -
+same data, same three tax scenarios, same XRechnung/ZUGFeRD output - with every
 `EinvoiceParty`/`EinvoiceAddress`/`EinvoiceLineItem`/`EinvoicePaymentMeans`/
 `EinvoicePaymentTerms` built as a `DataObject` instead. Open the two files side by side to see
 both styles for the same invoice; pick whichever fits how your own data already arrives (a
-`setXXX()` chain reads better when you are filling in values one at a time from program logic,
+`:setXXX()` chain reads better when you are filling in values one at a time from program logic,
 a `DataObject` is often more natural when mapping a whole record at once).
 
 ---
@@ -164,9 +161,8 @@ a `DataObject` is often more natural when mapping a whole record at once).
 ## 3. Validating a document loaded from disk
 
 `ManualEinvoice():createFromString( cXml )` / `:createFromFile( cPath )` load a CII XML
-document — XRechnung or ZUGFeRD, same CII content model — back into a fully populated
-`ManualEinvoice`, mapping every field `CiiSerializer` can write back via the matching
-`setXXX()`/`addXXX()` call. The result is read back out with the ordinary `getXXX()` getters
+document - XRechnung or ZUGFeRD, same CII content model - back into a fully populated
+`ManualEinvoice`. The result can be read back with the ordinary `:getXXX()` getters
 (`oInvoice:getNumber()`, `:getSeller()`, `:getLines()`, ...), validated with `:validate()` like
 any other invoice, and can be re-serialized with `:toXRechnung()`/`:toZugferd()`.
 
@@ -190,21 +186,21 @@ ELSE
 ENDIF
 ```
 
-`:createFromString()`/`:createFromFile()` raise (same `BEGIN SEQUENCE/RECOVER` pattern as
+`:createFromString()`/`:createFromFile()` raise an error (same `BEGIN SEQUENCE/RECOVER` pattern as
 `:toXRechnung()`) on malformed XML, on a document whose root is not
 `rsm:CrossIndustryInvoice`, or on an encoding that cannot be scanned as single-byte Character
-text at all (`UTF-16`/`UTF-32`) — anything else (`UTF-8`, `windows-1252`, `ISO-8859-1/2`, no
+text at all (`UTF-16`/`UTF-32`) - anything else (`UTF-8`, `windows-1252`, `ISO-8859-1/2`, no
 declaration) is accepted best-effort.
 
 **What is different about validating a loaded document:** `:validate()` runs the same EU
 content rules, EN 16931 rules and scenario rules as always, **plus** a check only a loaded
-document can ever exercise — the real EN 16931 arithmetic-consistency rules **BR-CO-10
+document can ever exercise: the real EN 16931 arithmetic-consistency rules **BR-CO-10
 through BR-CO-17**, comparing the totals and tax breakdown the document itself states against
 what this library independently recomputes from the document's own lines, allowances and
 charges. On the normal build path (§1/§2) these two sources are always the same number by
 construction, so there is nothing to check; a document you did not build yourself is the
 first case where "what it says" and "what its own line items add up to" can genuinely
-disagree — a mismatch is reported with the real `BR-CO-1x` rule id, exactly like any other
+disagree. A mismatch is reported with the real `BR-CO-1x` rule id, exactly like any other
 validation error.
 
 A few things do **not** survive the round trip, by design, not by accident: output is not
@@ -212,7 +208,7 @@ byte-identical to the source document (element order follows this library's own 
 line's exemption-reason **text** is regenerated from the seller's `EinvoiceCountryProfile`
 rather than copied from the source (CII does not restate a line's exemption text individually,
 only the aggregated header tax breakdown carries it), and the original sender's scenario
-(`DomesticEinvoice` vs. `IntraEuEinvoice` vs. ...) is lost — `:getScenario()` on a loaded
+(`DomesticEinvoice` vs. `IntraEuEinvoice` vs. ...) is lost. `:getScenario()` on a loaded
 invoice always reads `"MANUAL"`, since CII itself carries the already-resolved VAT category
 per line, never the country/kind inputs the automatic scenarios use to derive it.
 
@@ -237,7 +233,7 @@ Legal basis: § 14 UStG as amended by the Wachstumschancengesetz; BMF letters of
 
 **Out of scope of the domestic mandate:** small-amount invoices ≤ 250 € (§ 33 UStDV), tickets
 (§ 34 UStDV), tax-exempt supplies under § 4 Nr. 8–29 UStG, B2C, and **cross-border invoices
-(DE→EU, DE→third country)** — the mandate only covers supplies between businesses both
+(DE→EU, DE→third country)** - the mandate only covers supplies between businesses both
 established in Germany. Kleinunternehmer (§ 19 UStG) are exempt from *issuing* (§ 34a UStDV)
 but must be able to receive.
 
@@ -288,7 +284,7 @@ amount or exemption statement, and for special cases the mandatory statements be
 | home→third country services | `ExportInvoice` | `vatCategory: 'O'` | **O** (no rate) | VATEX-EU-O | "not subject to VAT" | O cannot mix with other categories; VAT IDs are suppressed (BR-O-*), tax number required |
 | non-EU seller / special cases | `ManualInvoice` | `vatCategory` (+ `vatRate`) on every line | as given | default per category | profile/EU text unless `exemptionReason` given | |
 
-Invoices to EU buyers **without** a VAT ID are B2C-like (home VAT or OSS destination VAT) — the
+Invoices to EU buyers **without** a VAT ID are B2C-like (home VAT or OSS destination VAT) - the
 library refuses to guess and asks for an explicit `vatCategory`.
 
 The AT and FR statements are the commonly used wordings; have them confirmed by a tax
@@ -300,7 +296,7 @@ Retrieved 23–24 Oct 2026. Primary sources (laws, official publications, standa
 bodies, validation artefacts) are listed first in each group; secondary sources were
 only used for dates/versions and are marked *(secondary)*. Where a site blocks automated
 access, the link was taken from search results but its content could not be re-read
-by machine — marked *(not machine-verified)*.
+by machine - marked *(not machine-verified)*.
 
 ### 6.1 German law and administrative guidance
 
@@ -362,10 +358,10 @@ by machine — marked *(not machine-verified)*.
 | EU fallback | Art. 138, 146, 196, 199, 226, 284 ff. Directive 2006/112/EC | link in 6.2 |
 
 The AT and FR wordings follow the cited provisions but are not certified by those
-administrations — have them reviewed by a tax advisor before production use. (This Xbase++
+administrations - have them reviewed by a tax advisor before production use. (This Xbase++
 module's own `DE`/`AT`/`FR` `EinvoiceCountryProfile` statements are the same wordings, 
 transliterated to plain ASCII to avoid a source-file codepage mismatch
-— the legal/semantic meaning is unchanged.)
+- the legal/semantic meaning is unchanged.)
 
 ### 6.6 How to re-check
 
