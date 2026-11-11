@@ -49,7 +49,7 @@ PROCEDURE Main( cDataPath, cOutDir )
    // class remarks.
    oSeller := EinvoiceParty():new()
    oSeller:setName( "Northwind Inc., Germany" )
-   oSeller:setVatId( "DE123456YY" )
+   oSeller:setVatId( "DE123456789" )
    oSeller:setAddress( EinvoiceAddress():new():setLine1( "Alexanderplatz 7" ):setPostcode( "10178" ):setCity( "Berlin" ):setCountryCode( "DE" ) )
    oSeller:setContact( "Accounting", "+49 30 1234567-0", "invoicing@northwind-inc.example" )
    oSeller:setElectronicAddress( "invoicing@northwind-inc.example" )
